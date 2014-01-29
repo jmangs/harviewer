@@ -348,11 +348,16 @@ HarModel.Loader =
         if ((baseUrl || inputUrls.length > 0) && urls.length > 0)
             return this.loadRemoteArchive(urls, callbackName, callback, errorCallback);
 
-        // The URL can specify also a locale file (with the same domain).
+        // The URL can specify also a local file (with the same domain).
         // http://domain/har/viewer?path=<local-file-path>
-        var filePath = Lib.getURLParameter("path");
-        if (filePath)
-            return this.loadLocalArchive(filePath, callback, errorCallback);
+        var files = [];
+        var filePaths = Lib.getURLParameters("path");
+        
+        for (var p in filePaths)
+            files.push(filePaths[p]);
+
+        if (files)
+            return this.loadLocalArchive(files, callback, errorCallback);
     },
 
     loadExample: function(path, callback)
@@ -366,16 +371,31 @@ HarModel.Loader =
         Cookies.setCookie("stats", true);
     },
 
-    loadLocalArchive: function(filePath, callback, errorCallback)
+    loadLocalArchive: function(files, callback, errorCallback)
     {
+        if (!files.length)
+            return false;
+
+        // Get the first local file path in the queue.
+        var file = files.shift();
+
         // Execute XHR to get a local file (the same domain).
         $.ajax({
-            url: filePath,
+            url: file,
             context: this,
 
             success: function(response)
             {
-                callback(response);
+                if(callback)
+                    callback(response);
+
+                if (files.length)
+                {
+                    var self = this;
+                    setTimeout(function() {
+                        self.loadLocalArchive(files, callback, errorCallback);
+                    }, 300);
+                }
             },
 
             error: function(response, ioArgs)

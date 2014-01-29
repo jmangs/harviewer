@@ -1,0 +1,5 @@
+#content .diff-removed{background:#fcc !important;}
+#content .diff-added{background:#cfc !important;}
+#content .diff-changed{background:#fdb !important;}
+#content .diff-moved{background:#ccf !important;}
+#content .diff-highlight{font-weight:bold;color:#c60;}
